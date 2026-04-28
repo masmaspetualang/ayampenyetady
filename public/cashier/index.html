@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kasir - WarungAdy</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="dashboard-wrapper" style="grid-template-columns: 1fr 380px;">
+        <main>
+            <header class="header">
+                <div class="logo">
+                     WarungAdy <span style="font-size: 0.8rem; font-weight: 400; color: var(--text-muted);">| Kasir</span>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="category-pill active" onclick="filterMenu('all', this)">Semua</button>
+                    <button class="category-pill" onclick="filterMenu('makanan', this)">Makanan</button>
+                    <button class="category-pill" onclick="filterMenu('minuman', this)">Minuman</button>
+                    <button class="category-pill" onclick="filterMenu('sate', this)">Sate</button>
+                </div>
+                <a href="/login.html" style="color: var(--text-muted);"><i class="fas fa-sign-out-alt"></i></a>
+            </header>
+
+            <div class="menu-grid" id="cashier-menu-grid">
+                <!-- Menu items -->
+            </div>
+        </main>
+
+        <aside class="cart-panel">
+            <h3>Pesanan Saat Ini</h3>
+            <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 2rem;">Invoice Baru</p>
+
+            <div class="cart-items" id="cart-list">
+                <!-- Cart items will appear here -->
+                <p style="text-align: center; color: var(--text-muted); margin-top: 2rem;">Keranjang Kosong</p>
+            </div>
+
+            <div class="total-section">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Subtotal</span>
+                    <span id="subtotal">Rp 0</span>
+                </div>
+                <div style="margin-bottom: 1.5rem;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 5px;">Metode Pembayaran</span>
+                    <div style="display: flex; gap: 5px;">
+                        <button id="btn-cash" class="category-pill active" style="flex: 1; padding: 5px;" onclick="setPayment('cash')">Cash</button>
+                        <button id="btn-qris" class="category-pill" style="flex: 1; padding: 5px;" onclick="setPayment('qris')">QRIS</button>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem; font-weight: 700; font-size: 1.2rem;">
+                    <span>Total</span>
+                    <span id="total">Rp 0</span>
+                </div>
+                <button class="btn" onclick="checkout()">Bayar Sekarang</button>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        let allMenu = [];
+        let cart = [];
+        let selectedPayment = 'cash';
+
+        function setPayment(method) {
+            selectedPayment = method;
+            document.getElementById('btn-cash').classList.toggle('active', method === 'cash');
+            document.getElementById('btn-qris').classList.toggle('active', method === 'qris');
+        }
+
+        async function loadMenu() {
+            try {
+                const res = await fetch('/api/menu');
+                allMenu = await res.json();
+                renderMenu(allMenu);
+            } catch (e) {
+                console.error("Gagal memuat menu");
+            }
+        }
+
+        function renderMenu(items) {
+            const grid = document.getElementById('cashier-menu-grid');
+            grid.innerHTML = items.map(item => `
+                <div class="menu-card" onclick="addToCart(${item.id})">
+                    <img src="${item.image_url || 'https://via.placeholder.com/200'}" class="menu-img">
+                    <div class="menu-info">
+                        <div class="menu-name">${item.name}</div>
+                        <div class="menu-price">Rp ${parseFloat(item.price).toLocaleString('id-ID')}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterMenu(cat, btn) {
+            document.querySelectorAll('.category-pill').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            if(cat === 'all') renderMenu(allMenu);
+            else renderMenu(allMenu.filter(m => m.categories.name === cat));
+        }
+
+        function addToCart(id) {
+            const item = allMenu.find(m => m.id === id);
+            const inCart = cart.find(c => c.id === id);
+            
+            if(inCart) inCart.quantity++;
+            else cart.push({...item, quantity: 1});
+            
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const list = document.getElementById('cart-list');
+            if(cart.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: var(--text-muted); margin-top: 2rem;">Keranjang Kosong</p>';
+                document.getElementById('total').innerText = 'Rp 0';
+                return;
+            }
+
+            list.innerHTML = cart.map(item => `
+                <div class="cart-item">
+                    <div>
+                        <div style="font-weight: 600;">${item.name}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">x${item.quantity}</div>
+                    </div>
+                    <div style="font-weight: 600;">Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</div>
+                </div>
+            `).join('');
+
+            const total = cart.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0);
+            document.getElementById('subtotal').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+            document.getElementById('total').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+        }
+
+        async function checkout() {
+            if(cart.length === 0) return Swal.fire('Oops!', 'Keranjang masih kosong', 'warning');
+
+            const total = cart.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0);
+            
+            const res = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    items: cart,
+                    total_price: total,
+                    username: 'kasir1', // Real app: take from cookie
+                    payment_method: selectedPayment
+                })
+            });
+
+            if(res.ok) {
+                Swal.fire('Pembayaran Berhasil!', 'Data transaksi telah tersimpan.', 'success');
+                cart = [];
+                updateCartUI();
+            }
+        }
+
+        loadMenu();
+    </script>
+</body>
+</html>

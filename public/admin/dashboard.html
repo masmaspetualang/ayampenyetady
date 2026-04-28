@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - WarungAdy</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <aside>
+            <div class="logo">
+                <i class="fas fa-utensils"></i> WarungAdy
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active" onclick="showSection('monitoring')">
+                        <i class="fas fa-chart-line"></i> Monitoring
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="showSection('menu-mgmt')">
+                        <i class="fas fa-tasks"></i> Kelola Menu
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="showSection('trans-history')">
+                        <i class="fas fa-receipt"></i> Riwayat Transaksi
+                    </a>
+                </li>
+            </ul>
+            <a href="/login.html" class="nav-link" style="color: var(--text-muted); margin-top: auto;">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </aside>
+
+        <main>
+            <header class="header">
+                <div>
+                    <h2 id="section-title">Monitoring Penjualan</h2>
+                    <p class="text-muted">Pantau kinerja warung Anda secara real-time</p>
+                </div>
+                <div class="user-info">
+                    <span id="admin-name">Admin</span>
+                </div>
+            </header>
+
+            <!-- Monitoring Section -->
+            <section id="monitoring-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Penjualan Hari Ini</h3>
+                        <div class="value" id="daily-sales">Rp 0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Penjualan Minggu Ini</h3>
+                        <div class="value" id="weekly-sales">Rp 0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Penjualan Bulan Ini</h3>
+                        <div class="value" id="monthly-sales">Rp 0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Produk Terjual</h3>
+                        <div class="value" id="total-qty">0</div>
+                    </div>
+                </div>
+
+                <div class="chart-container" style="background: white; padding: 2rem; border-radius: var(--radius); box-shadow: var(--shadow);">
+                    <h3>Grafik Penjualan 7 Hari Terakhir</h3>
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Menu Management Section -->
+            <section id="menu-mgmt-section" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h3>Daftar Menu</h3>
+                    <button class="btn" style="width: auto; padding: 0.6rem 1.2rem;" onclick="addMenuModal()">
+                        <i class="fas fa-plus"></i> Tambah Menu
+                    </button>
+                </div>
+                <div class="menu-grid" id="admin-menu-grid">
+                    <!-- Menu items will be injected here -->
+                </div>
+            </section>
+
+            <section id="trans-history-section" style="display: none;">
+                <div style="background: white; padding: 2rem; border-radius: var(--radius); box-shadow: var(--shadow);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3>Riwayat Penjualan</h3>
+                        <button class="btn" style="width: auto; background: #6C757D;" onclick="bulkDeleteModal()">
+                            <i class="fas fa-trash-sweep"></i> Hapus Massal
+                        </button>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 1.5rem;">
+                        <thead style="background: var(--bg); text-align: left;">
+                            <tr>
+                                <th style="padding: 12px;">Waktu</th>
+                                <th style="padding: 12px;">Total</th>
+                                <th style="padding: 12px;">Metode</th>
+                                <th style="padding: 12px;">Kasir</th>
+                                <th style="padding: 12px;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trans-table-body">
+                            <!-- Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        let allMenuData = [];
+        function showSection(section) {
+            document.querySelectorAll('section').forEach(s => s.style.display = 'none');
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            
+            if(section === 'monitoring') {
+                document.getElementById('monitoring-section').style.display = 'block';
+                document.getElementById('section-title').innerText = 'Monitoring Penjualan';
+                document.querySelector('a[onclick*="monitoring"]').classList.add('active');
+            } else if(section === 'menu-mgmt') {
+                document.getElementById('menu-mgmt-section').style.display = 'block';
+                document.getElementById('section-title').innerText = 'Kelola Menu';
+                document.querySelector('a[onclick*="menu-mgmt"]').classList.add('active');
+                loadAdminMenu();
+            } else {
+                document.getElementById('trans-history-section').style.display = 'block';
+                document.getElementById('section-title').innerText = 'Riwayat Transaksi';
+                document.querySelector('a[onclick*="trans-history"]').classList.add('active');
+                loadTransactions();
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/stats');
+                const stats = await res.json();
+                
+                document.getElementById('daily-sales').innerText = stats.daily;
+                document.getElementById('weekly-sales').innerText = stats.weekly;
+                document.getElementById('monthly-sales').innerText = stats.monthly;
+                document.getElementById('total-qty').innerText = stats.total_qty;
+                
+                initChart();
+            } catch (e) {
+                console.error("Gagal memuat stats");
+            }
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+                    datasets: [{
+                        label: 'Penjualan (Rp)',
+                        data: [1200000, 1900000, 3000000, 5000000, 2000000, 3000000, 4500000],
+                        borderColor: '#FF6B45',
+                        backgroundColor: 'rgba(255, 107, 69, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        async function loadAdminMenu() {
+            const grid = document.getElementById('admin-menu-grid');
+            grid.innerHTML = '<p>Memuat menu...</p>';
+            
+            try {
+                const res = await fetch('/api/menu');
+                const menu = await res.json();
+                allMenuData = menu;
+                
+                grid.innerHTML = menu.map(item => `
+                    <div class="menu-card">
+                        <img src="${item.image_url || 'https://via.placeholder.com/200'}" class="menu-img">
+                        <div class="menu-info">
+                            <div class="menu-name">${item.name}</div>
+                            <div class="menu-price">Rp ${parseFloat(item.price).toLocaleString('id-ID')}</div>
+                            <div style="margin-top: 10px; display: flex; gap: 5px;">
+                                <button class="btn" style="padding: 5px; background: #6C757D;" onclick="editMenu(${item.id})"><i class="fas fa-edit"></i></button>
+                                <button class="btn" style="padding: 5px; background: #dc3545;" onclick="deleteMenu(${item.id})"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                grid.innerHTML = '<p>Gagal memuat menu</p>';
+            }
+        }
+
+        async function addMenuModal() {
+            const { value: formValues } = await Swal.fire({
+                title: 'Tambah Menu Baru',
+                html:
+                    '<input id="swal-name" class="swal2-input" placeholder="Nama Makanan/Minuman">' +
+                    '<input id="swal-price" type="number" class="swal2-input" placeholder="Harga (Rp)">' +
+                    '<select id="swal-cat" class="swal2-input">' +
+                    '  <option value="1">Makanan</option>' +
+                    '  <option value="2">Minuman</option>' +
+                    '  <option value="3">Sate</option>' +
+                    '</select>' +
+                    '<div style="margin-top: 15px; text-align: left; padding: 0 1.6em;">' +
+                    '  <label style="font-size: 0.8rem; color: #666;">Pilih Foto Menu:</label>' +
+                    '  <input id="swal-file" type="file" class="swal2-file" accept="image/*">' +
+                    '</div>',
+                focusConfirm: false,
+                preConfirm: async () => {
+                    const name = document.getElementById('swal-name').value;
+                    const price = document.getElementById('swal-price').value;
+                    const category_id = document.getElementById('swal-cat').value;
+                    const fileInput = document.getElementById('swal-file');
+                    
+                    if(!name || !price) {
+                        Swal.showValidationMessage('Nama dan Harga harus diisi');
+                        return false;
+                    }
+
+                    let image_url = '';
+                    if (fileInput.files.length > 0) {
+                        const formData = new FormData();
+                        formData.append('image', fileInput.files[0]);
+                        
+                        try {
+                            const uploadRes = await fetch('/api/upload', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            const uploadData = await uploadRes.json();
+                            if(uploadData.success) {
+                                image_url = uploadData.publicUrl;
+                            }
+                        } catch (err) {
+                            console.error("Upload gagal", err);
+                        }
+                    }
+
+                    return { name, price, category_id, image_url }
+                }
+            });
+
+            if (formValues) {
+                const res = await fetch('/api/menu', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formValues)
+                });
+                if (res.ok) {
+                    Swal.fire('Berhasil!', 'Menu telah ditambahkan.', 'success');
+                    loadAdminMenu();
+                }
+            }
+        }
+
+        async function deleteMenu(id) {
+            const result = await Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: "Menu ini akan dihapus permanen!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#FF6B45',
+                cancelButtonColor: '#6C757D',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const res = await fetch(`/api/menu/${id}`, { method: 'DELETE' });
+                    if (res.ok) {
+                        Swal.fire('Terhapus!', 'Menu telah dihapus.', 'success');
+                        loadAdminMenu();
+                    }
+                } catch (e) {
+                    Swal.fire('Gagal!', 'Terjadi kesalahan sistem.', 'error');
+                }
+            }
+        }
+
+        async function editMenu(id) {
+            // Get current data
+            const item = allMenuData.find(m => m.id === id);
+            if(!item) return;
+
+            const { value: formValues } = await Swal.fire({
+                title: 'Edit Menu',
+                html:
+                    `<input id="swal-edit-name" class="swal2-input" value="${item.name}" placeholder="Nama Makanan/Minuman">` +
+                    `<input id="swal-edit-price" type="number" class="swal2-input" value="${item.price}" placeholder="Harga (Rp)">` +
+                    `<select id="swal-edit-cat" class="swal2-input">` +
+                    `  <option value="1" ${item.category_id == 1 ? 'selected' : ''}>Makanan</option>` +
+                    `  <option value="2" ${item.category_id == 2 ? 'selected' : ''}>Minuman</option>` +
+                    `  <option value="3" ${item.category_id == 3 ? 'selected' : ''}>Sate</option>` +
+                    `</select>` +
+                    `<div style="margin-top: 15px; text-align: left; padding: 0 1.6em;">` +
+                    `  <label style="font-size: 0.8rem; color: #666;">Ganti Foto (Kosongkan jika tetap):</label>` +
+                    `  <input id="swal-edit-file" type="file" class="swal2-file" accept="image/*">` +
+                    `</div>`,
+                focusConfirm: false,
+                preConfirm: async () => {
+                    const name = document.getElementById('swal-edit-name').value;
+                    const price = document.getElementById('swal-edit-price').value;
+                    const category_id = document.getElementById('swal-edit-cat').value;
+                    const fileInput = document.getElementById('swal-edit-file');
+
+                    let image_url = item.image_url; // Default to old one
+                    
+                    if (fileInput.files.length > 0) {
+                        const formData = new FormData();
+                        formData.append('image', fileInput.files[0]);
+                        try {
+                            const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData });
+                            const uploadData = await uploadRes.json();
+                            if(uploadData.success) image_url = uploadData.publicUrl;
+                        } catch (err) { console.error("Upload gagal", err); }
+                    }
+
+                    return { name, price, category_id, image_url }
+                }
+            });
+
+            if (formValues) {
+                const res = await fetch(`/api/menu/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formValues)
+                });
+                if (res.ok) {
+                    Swal.fire('Berhasil!', 'Menu telah diperbarui.', 'success');
+                    loadAdminMenu();
+                }
+            }
+        }
+
+        async function loadTransactions() {
+            const tbody = document.getElementById('trans-table-body');
+            tbody.innerHTML = '<tr><td colspan="5" style="padding: 20px; text-align: center;">Memuat data...</td></tr>';
+            try {
+                const res = await fetch('/api/transactions');
+                const trans = await res.json();
+                tbody.innerHTML = trans.map(t => `
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 12px;">${new Date(t.created_at).toLocaleString('id-ID')}</td>
+                        <td style="padding: 12px; font-weight: 600;">Rp ${parseFloat(t.total_price).toLocaleString('id-ID')}</td>
+                        <td style="padding: 12px;"><span style="padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; background: ${t.payment_method === 'qris' ? '#E3F2FD' : '#F1F8E9'}; color: ${t.payment_method === 'qris' ? '#1976D2' : '#388E3C'};">${t.payment_method.toUpperCase()}</span></td>
+                        <td style="padding: 12px;">${t.users?.username || 'System'}</td>
+                        <td style="padding: 12px;">
+                            <button class="btn" style="padding: 5px 10px; background: #dc3545; width: auto;" onclick="deleteTransaction(${t.id})"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                tbody.innerHTML = '<tr><td colspan="5" style="padding: 20px; text-align: center; color: red;">Gagal memuat data</td></tr>';
+            }
+        }
+
+        async function deleteTransaction(id) {
+            const result = await Swal.fire({
+                title: 'Hapus data transaksi?',
+                text: "Tindakan ini tidak bisa dibatalkan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                confirmButtonText: 'Ya, hapus!'
+            });
+
+            if (result.isConfirmed) {
+                const res = await fetch(`/api/transactions/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    Swal.fire('Terhapus!', 'Data transaksi telah dihapus.', 'success');
+                    loadTransactions();
+                    loadStats(); // Update chart and cards
+                }
+            }
+        }
+
+        async function bulkDeleteModal() {
+            const { value: selection } = await Swal.fire({
+                title: 'Hapus Data Masal',
+                html: `
+                    <div style="text-align: left; padding: 0 1rem;">
+                        <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 8px;">Pilih Rentang Waktu:</label>
+                        <select id="bulk-select" class="custom-swal-select">
+                            <option value="1week">Seminggu Terakhir</option>
+                            <option value="1month">Sebulan Terakhir</option>
+                            <option value="2months">Dua Bulan Terakhir</option>
+                            <option value="custom">Custom Tanggal</option>
+                        </select>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                confirmButtonText: 'Lanjut',
+                preConfirm: () => {
+                    return document.getElementById('bulk-select').value;
+                }
+            });
+
+            if (!selection) return;
+
+            let startDate, endDate;
+            const now = new Date();
+
+            if (selection === 'custom') {
+                const { value: dateRange } = await Swal.fire({
+                    title: 'Pilih Rentang Tanggal',
+                    html: '<input id="range-picker" class="swal2-input" placeholder="Klik untuk pilih rentang...">',
+                    didOpen: () => {
+                        flatpickr("#range-picker", {
+                            mode: "range",
+                            dateFormat: "Y-m-d",
+                        });
+                    },
+                    preConfirm: () => {
+                        const val = document.getElementById('range-picker').value;
+                        if(!val.includes('to')) {
+                            Swal.showValidationMessage('Silakan pilih rentang data (dari - ke)');
+                            return false;
+                        }
+                        return val;
+                    }
+                });
+                if (!dateRange) return;
+                const parts = dateRange.split(' to ');
+                startDate = new Date(parts[0]).toISOString();
+                endDate = new Date(parts[1] + 'T23:59:59').toISOString();
+            } else {
+                endDate = now.toISOString();
+                let days = selection === '1week' ? 7 : (selection === '1month' ? 30 : 60);
+                startDate = new Date(now.setDate(now.getDate() - days)).toISOString();
+            }
+
+            const confirm = await Swal.fire({
+                title: 'Konfirmasi Hapus',
+                text: `Hapus data dari ${new Date(startDate).toLocaleDateString()} sampai ${new Date(endDate).toLocaleDateString()}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus Semua!'
+            });
+
+            if (confirm.isConfirmed) {
+                const res = await fetch('/api/transactions/bulk-delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ start_date: startDate, end_date: endDate })
+                });
+                if (res.ok) {
+                    Swal.fire('Berhasil!', 'Data massal telah dihapus.', 'success');
+                    loadTransactions();
+                    loadStats();
+                }
+            }
+        }
+
+        loadStats();
+    </script>
+</body>
+</html>
