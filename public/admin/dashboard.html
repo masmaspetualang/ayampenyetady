@@ -13,6 +13,15 @@
 </head>
 <body>
     <div class="dashboard-wrapper">
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+        <div class="mobile-header">
+            <div class="logo" style="margin-bottom: 0;">
+                <i class="fas fa-utensils"></i> WarungAdy
+            </div>
+            <button class="menu-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
         <aside>
             <div class="logo">
                 <i class="fas fa-utensils"></i> WarungAdy
@@ -98,7 +107,8 @@
                             <i class="fas fa-trash-sweep"></i> Hapus Massal
                         </button>
                     </div>
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 1.5rem;">
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 1.5rem; min-width: 600px;">
                         <thead style="background: var(--bg); text-align: left;">
                             <tr>
                                 <th style="padding: 12px;">Waktu</th>
@@ -112,6 +122,7 @@
                             <!-- Rows -->
                         </tbody>
                     </table>
+                </div>
                 </div>
             </section>
         </main>
@@ -138,6 +149,16 @@
                 document.querySelector('a[onclick*="trans-history"]').classList.add('active');
                 loadTransactions();
             }
+
+            // Close sidebar on mobile after clicking
+            if (window.innerWidth <= 768) {
+                toggleSidebar();
+            }
+        }
+
+        function toggleSidebar() {
+            document.querySelector('aside').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
         }
 
         async function loadStats() {
