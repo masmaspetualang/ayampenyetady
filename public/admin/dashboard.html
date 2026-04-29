@@ -88,16 +88,18 @@
                     </div>
                 </div>
 
-                <div class="chart-container" style="background: white; padding: 2rem; border-radius: var(--radius); box-shadow: var(--shadow);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
-                        <h3>Grafik Penjualan</h3>
-                        <div style="display: flex; gap: 10px;">
-                            <button onclick="updateChartPeriod('daily')" class="category-pill" style="background: #E3F2FD; color: #1976D2; border: none;">Hari Ini</button>
-                            <button onclick="updateChartPeriod('weekly')" class="category-pill" style="background: #FFF3E0; color: #E65100; border: none;">Mingguan</button>
-                            <button onclick="updateChartPeriod('monthly')" class="category-pill" style="background: #E8F5E9; color: #2E7D32; border: none;">Bulanan</button>
+                <div class="chart-container" style="background: white; padding: 2rem; border-radius: var(--radius); box-shadow: var(--shadow); position: relative; height: 400px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                        <h3 style="margin: 0;">Grafik Penjualan</h3>
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="updateChartPeriod('daily')" class="category-pill" style="background: #E3F2FD; color: #1976D2; border: none; padding: 5px 15px; font-size: 0.8rem;">Hari Ini</button>
+                            <button onclick="updateChartPeriod('weekly')" class="category-pill" style="background: #FFF3E0; color: #E65100; border: none; padding: 5px 15px; font-size: 0.8rem;">Mingguan</button>
+                            <button onclick="updateChartPeriod('monthly')" class="category-pill" style="background: #E8F5E9; color: #2E7D32; border: none; padding: 5px 15px; font-size: 0.8rem;">Bulanan</button>
                         </div>
                     </div>
-                    <canvas id="salesChart"></canvas>
+                    <div style="position: absolute; left: 2rem; right: 2rem; bottom: 1.5rem; top: 5.5rem;">
+                        <canvas id="salesChart"></canvas>
+                    </div>
                 </div>
             </section>
 
