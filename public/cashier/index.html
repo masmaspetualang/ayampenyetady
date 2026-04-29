@@ -26,22 +26,22 @@
             </div>
 
             <div class="total-section">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                    <span>Subtotal</span>
-                    <span id="subtotal">Rp 0</span>
+                <div class="total-row">
+                    <span class="text-muted">Subtotal</span>
+                    <span id="subtotal" style="font-weight: 600;">Rp 0</span>
                 </div>
-                <div style="margin-bottom: 1.5rem;">
-                    <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 5px;">Metode Pembayaran</span>
-                    <div style="display: flex; gap: 5px;">
-                        <button id="btn-cash" class="category-pill active" style="flex: 1; padding: 5px;" onclick="setPayment('cash')">Cash</button>
-                        <button id="btn-qris" class="category-pill" style="flex: 1; padding: 5px;" onclick="setPayment('qris')">QRIS</button>
+                <div style="margin-bottom: 2rem;">
+                    <span style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 10px; font-weight: 600;">Metode Pembayaran</span>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="btn-cash" class="category-pill active" style="flex: 1; padding: 10px;" onclick="setPayment('cash')"><i class="fas fa-money-bill-wave"></i> Cash</button>
+                        <button id="btn-qris" class="category-pill" style="flex: 1; padding: 10px;" onclick="setPayment('qris')"><i class="fas fa-qrcode"></i> QRIS</button>
                     </div>
                 </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem; font-weight: 700; font-size: 1.2rem;">
-                    <span>Total</span>
-                    <span id="total">Rp 0</span>
+                <div class="total-row" style="margin-bottom: 2rem;">
+                    <span style="font-size: 1.2rem; font-weight: 700;">Total</span>
+                    <span id="total" class="total-amount">Rp 0</span>
                 </div>
-                <button class="btn" onclick="checkout()">Bayar Sekarang</button>
+                <button class="btn" onclick="checkout()" style="height: 55px; font-size: 1.1rem; border-radius: 12px; box-shadow: 0 8px 25px rgba(255, 107, 69, 0.3);">Bayar Sekarang</button>
             </div>
         </aside>
 
@@ -174,18 +174,28 @@
         function updateCartUI() {
             const list = document.getElementById('cart-list');
             if(cart.length === 0) {
-                list.innerHTML = '<p style="text-align: center; color: var(--text-muted); margin-top: 2rem;">Keranjang Kosong</p>';
+                list.innerHTML = `
+                    <div style="text-align: center; margin-top: 5rem;">
+                        <i class="fas fa-shopping-basket" style="font-size: 4rem; color: #eee; margin-bottom: 1rem; display: block;"></i>
+                        <p style="color: var(--text-muted);">Keranjang masih kosong</p>
+                    </div>
+                `;
                 document.getElementById('total').innerText = 'Rp 0';
+                document.getElementById('subtotal').innerText = 'Rp 0';
                 return;
             }
 
             list.innerHTML = cart.map(item => `
                 <div class="cart-item">
-                    <div>
-                        <div style="font-weight: 600;">${item.name}</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted);">x${item.quantity}</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: var(--text); font-size: 1rem;">${item.name}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">
+                            ${item.quantity} x Rp ${item.price.toLocaleString('id-ID')}
+                        </div>
                     </div>
-                    <div style="font-weight: 600;">Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</div>
+                    <div style="font-weight: 700; color: var(--primary); font-size: 1rem;">
+                        Rp ${(item.price * item.quantity).toLocaleString('id-ID')}
+                    </div>
                 </div>
             `).join('');
 

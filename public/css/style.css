@@ -296,9 +296,22 @@ main {
 }
 
 .total-section {
-    margin-top: 2rem;
+    margin-top: auto;
     padding-top: 2rem;
     border-top: 2px dashed var(--border);
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+}
+
+.total-amount {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--primary);
 }
 
 /* Custom Select styling for Swal */
@@ -436,21 +449,43 @@ main {
 
     .cart-panel {
         position: fixed;
-        bottom: -100%;
+        top: 0;
+        bottom: 0;
         left: 0;
         right: 0;
-        height: 80vh;
-        z-index: 1001;
-        border-right: none;
-        border-left: none;
-        border-top: 1px solid var(--border);
-        border-radius: 24px 24px 0 0;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+        height: 100vh;
+        width: 100% !important;
+        margin: 0;
+        z-index: 1100;
+        border: none;
+        border-radius: 0;
+        transform: translateY(100%);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+        background: var(--surface);
     }
 
     .cart-panel.active {
-        bottom: 0;
+        transform: translateY(0);
+    }
+
+    .cart-panel h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .cart-items {
+        padding: 1rem 0;
+    }
+
+    .cart-item {
+        padding: 1.2rem 0;
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+    .total-section {
+        padding-bottom: 80px; /* Space for bottom nav or extra padding */
     }
 
     .bottom-nav {
