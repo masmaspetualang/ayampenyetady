@@ -445,7 +445,7 @@ main {
         margin-bottom: 1.5rem;
     }
 
-    .header .logo, .header a[href="/login.html"] {
+    .header .logo, .header a[href="/logout"] {
         display: none;
     }
 
