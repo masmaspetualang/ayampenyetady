@@ -89,7 +89,14 @@
                 </div>
 
                 <div class="chart-container" style="background: white; padding: 2rem; border-radius: var(--radius); box-shadow: var(--shadow);">
-                    <h3>Grafik Penjualan 7 Hari Terakhir</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                        <h3>Grafik Penjualan</h3>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="updateChartPeriod('daily')" class="category-pill" style="background: #E3F2FD; color: #1976D2; border: none;">Hari Ini</button>
+                            <button onclick="updateChartPeriod('weekly')" class="category-pill" style="background: #FFF3E0; color: #E65100; border: none;">Mingguan</button>
+                            <button onclick="updateChartPeriod('monthly')" class="category-pill" style="background: #E8F5E9; color: #2E7D32; border: none;">Bulanan</button>
+                        </div>
+                    </div>
                     <canvas id="salesChart"></canvas>
                 </div>
             </section>
@@ -138,6 +145,9 @@
 
     <script>
         let allMenuData = [];
+        let allTransactions = [];
+        let salesChart = null;
+
         function showSection(section) {
             document.querySelectorAll('section').forEach(s => s.style.display = 'none');
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
@@ -179,31 +189,119 @@
                 document.getElementById('monthly-sales').innerText = stats.monthly;
                 document.getElementById('total-qty').innerText = stats.total_qty;
                 
-                initChart();
+                // Load transactions for chart
+                const resTrans = await fetch('/api/transactions');
+                allTransactions = await resTrans.json();
+                updateChartPeriod('weekly'); // Default view
             } catch (e) {
                 console.error("Gagal memuat stats");
             }
         }
 
-        function initChart() {
+        function updateChartPeriod(period) {
+            let filteredTrans = [];
+            let labels = [];
+            let dataPoints = [];
+            const now = new Date();
+
+            if (period === 'daily') {
+                const today = now.toDateString();
+                // Group by hour for today
+                const hours = {};
+                for(let i=0; i<24; i++) hours[i] = 0;
+                
+                allTransactions.forEach(t => {
+                    const d = new Date(t.created_at);
+                    if(d.toDateString() === today) {
+                        hours[d.getHours()] += parseFloat(t.total_price);
+                    }
+                });
+                
+                labels = Object.keys(hours).map(h => h + ':00');
+                dataPoints = Object.values(hours);
+            } 
+            else if (period === 'weekly') {
+                const last7Days = [...Array(7)].map((_, i) => {
+                    const d = new Date();
+                    d.setDate(d.getDate() - (6 - i));
+                    return d.toDateString();
+                });
+
+                const days = {};
+                last7Days.forEach(d => days[d] = 0);
+
+                allTransactions.forEach(t => {
+                    const d = new Date(t.created_at).toDateString();
+                    if(days[d] !== undefined) {
+                        days[d] += parseFloat(t.total_price);
+                    }
+                });
+
+                labels = last7Days.map(d => new Date(d).toLocaleDateString('id-ID', { weekday: 'short' }));
+                dataPoints = last7Days.map(d => days[d]);
+            }
+            else if (period === 'monthly') {
+                const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                const days = {};
+                for(let i=1; i<=daysInMonth; i++) days[i] = 0;
+
+                allTransactions.forEach(t => {
+                    const d = new Date(t.created_at);
+                    if(d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) {
+                        days[d.getDate()] += parseFloat(t.total_price);
+                    }
+                });
+
+                labels = Object.keys(days);
+                dataPoints = Object.values(days);
+            }
+
+            initChart(labels, dataPoints, period);
+        }
+
+        function initChart(labels, data, period) {
             const ctx = document.getElementById('salesChart').getContext('2d');
-            new Chart(ctx, {
+            
+            if (salesChart) {
+                salesChart.destroy();
+            }
+
+            let periodTitle = period === 'daily' ? 'Hari Ini' : (period === 'weekly' ? '7 Hari Terakhir' : 'Bulan Ini');
+
+            salesChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+                    labels: labels,
                     datasets: [{
-                        label: 'Penjualan (Rp)',
-                        data: [1200000, 1900000, 3000000, 5000000, 2000000, 3000000, 4500000],
+                        label: `Penjualan ${periodTitle} (Rp)`,
+                        data: data,
                         borderColor: '#FF6B45',
                         backgroundColor: 'rgba(255, 107, 69, 0.1)',
                         fill: true,
-                        tension: 0.4
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#FF6B45'
                     }]
                 },
                 options: {
                     responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true } }
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: true, position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => `Rp ${context.raw.toLocaleString('id-ID')}`
+                            }
+                        }
+                    },
+                    scales: { 
+                        y: { 
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => 'Rp ' + value.toLocaleString('id-ID')
+                            }
+                        } 
+                    }
                 }
             });
         }
