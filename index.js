@@ -26,19 +26,51 @@ app.use(express.static('public'));
 
 // Auth Middleware
 const authenticate = async (req, res, next) => {
-    const token = req.cookies.token;
-    if (!token) return res.redirect('/login.html');
+    const username = req.cookies.username;
+    const role = req.cookies.user_role;
     
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user) return res.redirect('/login.html');
+    if (!username) {
+        if (req.xhr || req.path.startsWith('/api/')) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+        return res.redirect('/login');
+    }
     
-    req.user = user;
+    req.user = { username, role };
+    next();
+};
+
+const adminOnly = (req, res, next) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).send('Akses dilarang: Hanya admin yang diizinkan');
+    }
     next();
 };
 
 // Routes
 app.get('/', (req, res) => {
-    res.redirect('/login.html');
+    if (req.cookies.username) {
+        return res.redirect(req.cookies.user_role === 'admin' ? '/admin' : '/cashier');
+    }
+    res.redirect('/login');
+});
+
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/login.html'));
+});
+
+app.get('/cashier', authenticate, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/cashier/index.html'));
+});
+
+app.get('/admin', authenticate, adminOnly, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/admin/dashboard.html'));
+});
+
+app.get('/logout', (req, res) => {
+    res.clearCookie('username');
+    res.clearCookie('user_role');
+    res.redirect('/login');
 });
 
 // API Login

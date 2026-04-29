@@ -12,16 +12,40 @@
   ],
   "routes": [
     {
+      "src": "/css/(.*)",
+      "dest": "/public/css/$1"
+    },
+    {
+      "src": "/js/(.*)",
+      "dest": "/public/js/$1"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/public/assets/$1"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "index.js"
     },
     {
-      "src": "/",
-      "dest": "/public/login.html"
+      "src": "/login",
+      "dest": "index.js"
+    },
+    {
+        "src": "/logout",
+        "dest": "index.js"
+    },
+    {
+      "src": "/cashier",
+      "dest": "index.js"
+    },
+    {
+      "src": "/admin",
+      "dest": "index.js"
     },
     {
       "src": "/(.*)",
-      "dest": "/public/$1"
+      "dest": "index.js"
     }
   ]
 }

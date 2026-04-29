@@ -55,7 +55,7 @@
                 <div class="logo" style="margin-bottom: 0;">
                     <i class="fas fa-utensils"></i> WarungAdy
                 </div>
-                <a href="/login.html" style="color: var(--primary); font-size: 1.2rem;"><i class="fas fa-sign-out-alt"></i></a>
+                <a href="/logout" style="color: var(--primary); font-size: 1.2rem;"><i class="fas fa-sign-out-alt"></i></a>
             </div>
             <header class="header">
                 <div class="logo">
@@ -67,7 +67,7 @@
                     <button class="category-pill" onclick="filterMenu('minuman', this)">Minuman</button>
                     <button class="category-pill" onclick="filterMenu('sate', this)">Sate</button>
                 </div>
-                <a href="/login.html" style="color: var(--text-muted);"><i class="fas fa-sign-out-alt"></i></a>
+                <a href="/logout" style="color: var(--text-muted);"><i class="fas fa-sign-out-alt"></i></a>
             </header>
 
             <div class="menu-grid" id="cashier-menu-grid">
@@ -239,10 +239,7 @@
             document.getElementById('subtotal').innerText = `Rp ${total.toLocaleString('id-ID')}`;
             document.getElementById('total').innerText = `Rp ${total.toLocaleString('id-ID')}`;
             
-            // Mobile UI updates
-            const count = cart.reduce((acc, curr) => acc + curr.quantity, 0);
-            document.getElementById('cart-count-mobile').innerText = count;
-            document.getElementById('cart-total-mobile').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+            // Mobile UI updates - Notification dot handled in addToCart/toggleCart
         }
 
         async function checkout() {
