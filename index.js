@@ -251,20 +251,33 @@ app.get('/api/stats', async (req, res) => {
         const { data: trans, error } = await supabase.from('transactions').select('*');
         if (error) throw error;
 
+        // Calculate real weekly/monthly sums
         const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
         const daily = trans
-            .filter(t => new Date(t.created_at) >= today)
+            .filter(t => new Date(t.created_at) >= startOfDay)
             .reduce((acc, curr) => acc + parseFloat(curr.total_price), 0);
             
-        const total = trans.reduce((acc, curr) => acc + parseFloat(curr.total_price), 0);
+        const weekly = trans
+            .filter(t => new Date(t.created_at) >= startOfWeek)
+            .reduce((acc, curr) => acc + parseFloat(curr.total_price), 0);
+            
+        const monthly = trans
+            .filter(t => new Date(t.created_at) >= startOfMonth)
+            .reduce((acc, curr) => acc + parseFloat(curr.total_price), 0);
+
+        // Get total quantity from transaction_items
+        const { data: transItems, error: itemsErr } = await supabase.from('transaction_items').select('quantity');
+        const totalQty = itemsErr ? trans.length : transItems.reduce((acc, curr) => acc + curr.quantity, 0);
 
         res.json({
             daily: `Rp ${daily.toLocaleString('id-ID')}`,
-            weekly: `Rp ${(total * 0.4).toLocaleString('id-ID')}`, // Demo fallback
-            monthly: `Rp ${total.toLocaleString('id-ID')}`,
-            total_qty: trans.length
+            weekly: `Rp ${weekly.toLocaleString('id-ID')}`,
+            monthly: `Rp ${monthly.toLocaleString('id-ID')}`,
+            total_qty: totalQty
         });
     } catch (e) {
         res.status(500).json({ error: e.message });
