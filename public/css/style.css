@@ -314,6 +314,41 @@ main {
     color: var(--primary);
 }
 
+.qty-control {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 50px;
+}
+
+.qty-control button {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    color: var(--primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.qty-control button:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.qty-control span {
+    font-weight: 700;
+    min-width: 20px;
+    text-align: center;
+}
+
 /* Custom Select styling for Swal */
 .custom-swal-select {
     width: 100%;

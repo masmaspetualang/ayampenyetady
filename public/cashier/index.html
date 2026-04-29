@@ -12,11 +12,16 @@
     <div class="dashboard-wrapper cashier-wrapper">
         <div class="sidebar-overlay" id="cart-overlay" onclick="toggleCart()"></div>
         <aside class="cart-panel" id="cart-panel">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                 <h3 style="margin-bottom:0;">Pesanan Saat Ini</h3>
-                <button class="menu-toggle mobile-only-btn" onclick="toggleCart()" style="display: none;">
-                    <i class="fas fa-times"></i>
-                </button>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button onclick="clearCart()" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 0.85rem; font-weight: 600;">
+                        <i class="fas fa-trash-alt"></i> Hapus Semua
+                    </button>
+                    <button class="menu-toggle mobile-only-btn" onclick="toggleCart()" style="display: none;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
             </div>
             <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 2rem;">Invoice Baru</p>
 
@@ -117,6 +122,33 @@
             }
         }
 
+        function clearCart() {
+            if(cart.length === 0) return;
+            Swal.fire({
+                title: 'Hapus semua pesanan?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                confirmButtonText: 'Ya, Hapus!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    cart = [];
+                    updateCartUI();
+                }
+            });
+        }
+
+        function updateQuantity(id, delta) {
+            const item = cart.find(c => c.id === id);
+            if(!item) return;
+
+            item.quantity += delta;
+            if(item.quantity <= 0) {
+                cart = cart.filter(c => c.id !== id);
+            }
+            updateCartUI();
+        }
+
         function setPayment(method) {
             selectedPayment = method;
             document.getElementById('btn-cash').classList.toggle('active', method === 'cash');
@@ -190,11 +222,15 @@
                     <div style="flex: 1;">
                         <div style="font-weight: 600; color: var(--text); font-size: 1rem;">${item.name}</div>
                         <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">
-                            ${item.quantity} x Rp ${item.price.toLocaleString('id-ID')}
+                            Rp ${(item.price * item.quantity).toLocaleString('id-ID')}
                         </div>
                     </div>
-                    <div style="font-weight: 700; color: var(--primary); font-size: 1rem;">
-                        Rp ${(item.price * item.quantity).toLocaleString('id-ID')}
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="qty-control">
+                            <button onclick="updateQuantity(${item.id}, -1)"><i class="fas fa-minus"></i></button>
+                            <span>${item.quantity}</span>
+                            <button onclick="updateQuantity(${item.id}, 1)"><i class="fas fa-plus"></i></button>
+                        </div>
                     </div>
                 </div>
             `).join('');
