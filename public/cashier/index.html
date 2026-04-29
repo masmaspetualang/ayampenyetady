@@ -16,9 +16,7 @@
                 <div class="logo" style="margin-bottom: 0;">
                     <i class="fas fa-utensils"></i> WarungAdy
                 </div>
-                <button class="menu-toggle" onclick="toggleCart()">
-                    <i class="fas fa-shopping-cart"></i>
-                </button>
+                <a href="/login.html" style="color: var(--primary); font-size: 1.2rem;"><i class="fas fa-sign-out-alt"></i></a>
             </div>
             <header class="header">
                 <div class="logo">
@@ -72,10 +70,17 @@
             </div>
         </aside>
 
-        <button class="view-cart-btn btn" onclick="toggleCart()">
-            <span><i class="fas fa-shopping-cart"></i> <span id="cart-count-mobile">0</span> Item</span>
-            <span id="cart-total-mobile">Rp 0</span>
-        </button>
+        <nav class="bottom-nav">
+            <div class="bottom-nav-item active" onclick="showMenuSection()">
+                <i class="fas fa-utensils"></i>
+                <span>Menu</span>
+            </div>
+            <div class="bottom-nav-item" id="cart-nav-item" onclick="toggleCart()">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Keranjang</span>
+                <div class="notification-dot" id="cart-dot"></div>
+            </div>
+        </nav>
     </div>
 
     <script>
@@ -83,9 +88,33 @@
         let cart = [];
         let selectedPayment = 'cash';
 
+        function showMenuSection() {
+            document.getElementById('cart-panel').classList.remove('active');
+            document.getElementById('cart-overlay').classList.remove('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            document.querySelectorAll('.bottom-nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelector('.bottom-nav-item:first-child').classList.add('active');
+        }
+
         function toggleCart() {
-            document.getElementById('cart-panel').classList.toggle('active');
-            document.getElementById('cart-overlay').classList.toggle('active');
+            const panel = document.getElementById('cart-panel');
+            const overlay = document.getElementById('cart-overlay');
+            const dot = document.getElementById('cart-dot');
+            
+            panel.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            // Hide dot when cart is opened
+            if(panel.classList.contains('active')) {
+                dot.style.display = 'none';
+                document.querySelectorAll('.bottom-nav-item').forEach(item => item.classList.remove('active'));
+                document.getElementById('cart-nav-item').classList.add('active');
+            } else {
+                // Return active state to menu if cart closed
+                document.querySelectorAll('.bottom-nav-item').forEach(item => item.classList.remove('active'));
+                document.querySelector('.bottom-nav-item:first-child').classList.add('active');
+            }
         }
 
         function setPayment(method) {
@@ -131,6 +160,13 @@
             
             if(inCart) inCart.quantity++;
             else cart.push({...item, quantity: 1});
+            
+            // Show notification dot
+            const dot = document.getElementById('cart-dot');
+            const panel = document.getElementById('cart-panel');
+            if(!panel.classList.contains('active')) {
+                dot.style.display = 'block';
+            }
             
             updateCartUI();
         }

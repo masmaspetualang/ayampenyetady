@@ -14,17 +14,20 @@
 <body>
     <div class="dashboard-wrapper">
         <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
-        <div class="mobile-header">
+        <!-- <div class="mobile-header">
             <div class="logo" style="margin-bottom: 0;">
                 <i class="fas fa-utensils"></i> WarungAdy
             </div>
             <button class="menu-toggle" onclick="toggleSidebar()">
                 <i class="fas fa-bars"></i>
             </button>
-        </div>
+        </div> -->
         <aside>
-            <div class="logo">
-                <i class="fas fa-utensils"></i> WarungAdy
+            <div class="logo" style="display: flex; justify-content: space-between; align-items: center;">
+                <div><i class="fas fa-utensils"></i> WarungAdy</div>
+                <button class="menu-toggle mobile-only-btn" onclick="toggleSidebar()" style="display: none; background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <ul class="nav-menu">
                 <li class="nav-item">
@@ -50,9 +53,14 @@
 
         <main>
             <header class="header">
-                <div>
-                    <h2 id="section-title">Monitoring Penjualan</h2>
-                    <p class="text-muted">Pantau kinerja warung Anda secara real-time</p>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="menu-toggle mobile-only-btn" onclick="toggleSidebar()" style="display: none; background: none; border: none; font-size: 1.5rem; color: var(--primary); cursor: pointer; padding: 5px;">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <h2 id="section-title">Monitoring Penjualan</h2>
+                        <p class="text-muted">Pantau kinerja warung Anda secara real-time</p>
+                    </div>
                 </div>
                 <div class="user-info">
                     <span id="admin-name">Admin</span>
