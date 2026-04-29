@@ -111,6 +111,16 @@ body {
     height: 100vh;
 }
 
+.cashier-wrapper {
+    grid-template-columns: 350px 1fr !important;
+}
+
+.sidebar-overlay {
+    position: fixed;
+    z-index: 999;
+    display: none;
+}
+
 aside {
     background: var(--surface);
     border-right: 1px solid var(--border);
@@ -262,10 +272,13 @@ main {
 /* Cashier Cart Overlay */
 .cart-panel {
     background: var(--surface);
-    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
     padding: 2rem;
     display: flex;
     flex-direction: column;
+    height: 100vh;
+    position: relative;
+    z-index: 10;
 }
 
 .cart-items {
@@ -414,7 +427,13 @@ main {
         height: 140px;
     }
 
-    /* Cashier Specific */
+    /* Cashier Specific Mobile */
+    .dashboard-wrapper {
+        display: block; /* Stack on mobile */
+        height: auto;
+        overflow: visible;
+    }
+
     .cart-panel {
         position: fixed;
         bottom: -100%;
@@ -423,6 +442,7 @@ main {
         height: 80vh;
         z-index: 1001;
         border-right: none;
+        border-left: none;
         border-top: 1px solid var(--border);
         border-radius: 24px 24px 0 0;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);

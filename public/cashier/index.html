@@ -9,33 +9,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
-    <div class="dashboard-wrapper">
+    <div class="dashboard-wrapper cashier-wrapper">
         <div class="sidebar-overlay" id="cart-overlay" onclick="toggleCart()"></div>
-        <main>
-            <div class="mobile-header">
-                <div class="logo" style="margin-bottom: 0;">
-                    <i class="fas fa-utensils"></i> WarungAdy
-                </div>
-                <a href="/login.html" style="color: var(--primary); font-size: 1.2rem;"><i class="fas fa-sign-out-alt"></i></a>
-            </div>
-            <header class="header">
-                <div class="logo">
-                     WarungAdy <span style="font-size: 0.8rem; font-weight: 400; color: var(--text-muted);">| Kasir</span>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="category-pill active" onclick="filterMenu('all', this)">Semua</button>
-                    <button class="category-pill" onclick="filterMenu('makanan', this)">Makanan</button>
-                    <button class="category-pill" onclick="filterMenu('minuman', this)">Minuman</button>
-                    <button class="category-pill" onclick="filterMenu('sate', this)">Sate</button>
-                </div>
-                <a href="/login.html" style="color: var(--text-muted);"><i class="fas fa-sign-out-alt"></i></a>
-            </header>
-
-            <div class="menu-grid" id="cashier-menu-grid">
-                <!-- Menu items -->
-            </div>
-        </main>
-
         <aside class="cart-panel" id="cart-panel">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <h3 style="margin-bottom:0;">Pesanan Saat Ini</h3>
@@ -69,6 +44,31 @@
                 <button class="btn" onclick="checkout()">Bayar Sekarang</button>
             </div>
         </aside>
+
+        <main>
+            <div class="mobile-header">
+                <div class="logo" style="margin-bottom: 0;">
+                    <i class="fas fa-utensils"></i> WarungAdy
+                </div>
+                <a href="/login.html" style="color: var(--primary); font-size: 1.2rem;"><i class="fas fa-sign-out-alt"></i></a>
+            </div>
+            <header class="header">
+                <div class="logo">
+                     WarungAdy <span style="font-size: 0.8rem; font-weight: 400; color: var(--text-muted);">| Kasir</span>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="category-pill active" onclick="filterMenu('all', this)">Semua</button>
+                    <button class="category-pill" onclick="filterMenu('makanan', this)">Makanan</button>
+                    <button class="category-pill" onclick="filterMenu('minuman', this)">Minuman</button>
+                    <button class="category-pill" onclick="filterMenu('sate', this)">Sate</button>
+                </div>
+                <a href="/login.html" style="color: var(--text-muted);"><i class="fas fa-sign-out-alt"></i></a>
+            </header>
+
+            <div class="menu-grid" id="cashier-menu-grid">
+                <!-- Menu items -->
+            </div>
+        </main>
 
         <nav class="bottom-nav">
             <div class="bottom-nav-item active" onclick="showMenuSection()">
