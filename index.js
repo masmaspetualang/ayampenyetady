@@ -18,11 +18,10 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const upload = multer({ storage: multer.memoryStorage() });
 
 // Middleware
-app.use(compression()); // Compress all responses
+app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(express.static('public'));
 
 // Auth Middleware
 const authenticate = async (req, res, next) => {
@@ -71,6 +70,20 @@ app.get('/logout', (req, res) => {
     res.clearCookie('username');
     res.clearCookie('user_role');
     res.redirect('/login');
+});
+
+// Assets - only serve css, js, and assets statically
+app.use('/css', express.static(path.join(__dirname, 'public/css')));
+app.use('/js', express.static(path.join(__dirname, 'public/js')));
+app.use('/assets', express.static(path.join(__dirname, 'public/assets')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Block direct access to HTML files in public
+app.use((req, res, next) => {
+    if (req.path.endsWith('.html')) {
+        return res.redirect('/login');
+    }
+    next();
 });
 
 // API Login
